@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Vendas</title>
+    <!-- Conectando a pintura e o design -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div class="painel-sistema">
+        <h2>Cadastro de Venda</h2>
+        
+        <!-- Campo para o nome do cliente -->
+        <label>Nome do Cliente:</label>
+        <input type="text" id="nome-cliente" placeholder="Ex: Empresa Exemplo">
+
+        <!-- Campo para a data da venda -->
+        <label>Data da Venda:</label>
+        <input type="date" id="data-venda">
+
+        <!-- Campo para o valor financeiro -->
+        <label>Valor da Venda (R$):</label>
+        <input type="number" id="valor-da-venda" placeholder="Ex: 9000">
+
+        <!-- Campo para meses de desconto -->
+        <label>Meses de Desconto:</label>
+        <input type="number" id="meses-desconto" placeholder="Ex: 3">
+        
+        <!-- O gatilho para rodar a conta -->
+        <button id="botao-salvar">Calcular Comissão</button>
+        
+        <!-- Quadro de avisos para o resultado -->
+        <p id="texto-resultado"></p>
+    </div>
+
+    <!-- Conectando o cérebro/motor matemático -->
+    <script src="script.js"></script>
+</body>
+</html>

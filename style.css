@@ -1,0 +1,87 @@
+/* 1. CONFIGURAÇÃO GERAL DA PÁGINA */
+body {
+    background-color: #0b192c; /* O azul marinho escuro elegante */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte moderna e limpa */
+    display: flex; /* Essas 3 linhas centralizam tudo perfeitamente no meio da tela */
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Faz a tela ocupar 100% da altura do monitor */
+    margin: 0;
+}
+
+/* 2. A CAIXA BRANCA PRINCIPAL (Nosso Painel) */
+.painel-sistema {
+    background-color: #ffffff; /* Fundo branco minimalista */
+    padding: 40px; /* Espaço interno para não ficar espremido */
+    border-radius: 12px; /* Deixa as bordas arredondadas (visual moderno) */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Uma sombra suave flutuante */
+    width: 100%;
+    max-width: 400px; /* Não deixa a caixa ficar larga demais em telas grandes */
+}
+
+/* 3. TÍTULOS E TEXTOS */
+h2 {
+    text-align: center;
+    color: #0b192c; /* Título em azul escuro */
+    margin-top: 0;
+}
+
+label {
+    display: block; /* Coloca o texto em cima do campo de digitação */
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333333;
+    font-size: 14px;
+}
+
+/* 4. OS CAMPOS DE DIGITAÇÃO */
+input {
+    width: 100%; /* Ocupa toda a largura da caixa branca */
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1.5px solid #cccccc; /* Bordinha cinza clara */
+    border-radius: 6px;
+    font-size: 16px;
+    outline: none; /* Tira aquela borda feia padrão do navegador */
+}
+
+/* Efeito quando para quando clicar dentro do campo para digitar */
+input:focus {
+    border-color: #0b192c; /* A borda fica azul marinho para destacar */
+}
+
+/* 5. OS BOTÕES */
+button {
+    width: 100%;
+    padding: 14px;
+    background-color: #0b192c; /* Fundo azul marinho */
+    color: #ffffff; /* Letra branca */
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer; /* Transforma o mouse numa mãozinha */
+    transition: 0.3s; /* Faz a mudança de cor ao passar o mouse ser suave */
+}
+
+/* Efeito quando passar o mouse em cima do botão */
+button:hover {
+    background-color: #1a365d; /* Um azul um pouquinho mais claro */
+}
+
+/* 6. LINKS E TEXTOS EXTRAS (Como o link de login e o resultado) */
+p {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+a {
+    color: #0b192c;
+    text-decoration: none; /* Tira o sublinhado clássico de link */
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline; /* Coloca o sublinhado só ao passar o mouse */
+}
