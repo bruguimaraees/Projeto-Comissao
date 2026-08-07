@@ -39,7 +39,7 @@ if (btnSalvar){
 
         // 2. Busca o que já estava salvo ou cria uma lista vazia
         let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
-
+        
         // 3. Adiciona a venda nova na lista
         vendasSalvas.push(dadosDaVenda);
 
@@ -51,32 +51,106 @@ if (btnSalvar){
         alert("Venda registrada com sucesso!");
 
         atualizarTabela();
+        atualizarGrafico();
     });
 
 }
     
 
 function atualizarTabela(){
-
+    // 1. Busca os dados salvos no navegador ou cria uma lista vazia
     let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+    
+    // 2. Inverte a ordem para a venda mais recente aparecer no topo
+    vendasSalvas.reverse(); 
+
+    // 3. Pega os elementos da tabela e dos cards pelo ID
     let corpoTabela = document.getElementById("tabela-ultimas-vendas");
+    let cardAcumulado = document.getElementById("card-acumulado");
+    let cardMedia = document.getElementById("card-media");
+    let cardTotal = document.getElementById("card-total");
 
-    if (!corpoTabela) return;
+    let valorAcumulado = 0;
+    let totalRegistros = vendasSalvas.length;
 
-    corpoTabela.innerHTML ="";         //limpa o conteúdo para evitar duplicidade
+    // 4. Se a tabela existir na página, limpa e desenha as linhas
+    if (corpoTabela) {
+        corpoTabela.innerHTML =""; 
 
-    vendasSalvas.forEach(function(venda) {
-        let linha = document.createElement("tr");
+        vendasSalvas.forEach(function(venda) {
+            valorAcumulado += venda.valor; // Soma o valor para o total acumulado
 
-        linha.innerHTML = `
-            <td>${venda.cliente}</td>
-            <td>R$ ${venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-        `;
+            let linha = document.createElement("tr");
+            linha.innerHTML = `
+                <td>${venda.cliente}</td>
+                <td>R$ ${venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            `;
+            corpoTabela.appendChild(linha);
+        });
+    } else {
+        // Se estiver na página de cadastro (sem tabela), apenas soma os valores
+        vendasSalvas.forEach(function(venda) {
+            valorAcumulado += venda.valor;
+        });
+    }
 
-        corpoTabela.appendChild(linha);
-    });
+    // 5. Calcula a média matemática das vendas
+    let mediaVendas = totalRegistros > 0 ? valorAcumulado / totalRegistros : 0;
 
-
+    // 6. Joga os valores calculados para dentro dos cards na tela
+    if (cardAcumulado) {
+        cardAcumulado.innerText = `R$ ${valorAcumulado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    }
+    if (cardMedia) {
+        cardMedia.innerText = `R$ ${mediaVendas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    }
+    if (cardTotal) {
+        cardTotal.innerText = `${totalRegistros} Registro${totalRegistros === 1 ? '' : 's'}`;
+    }
 }
 
+// Executa assim que a página abre
 atualizarTabela();
+
+let meuGrafico = null; // Variável global para controlar o gráfico
+
+function atualizarGrafico() {
+    let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+    let ctx = document.getElementById('graficoVendas');
+
+    if (!ctx) return;
+
+    // Pega os dados das vendas (limitando para mostrar os últimos se quiser, ou todos)
+    let labels = vendasSalvas.map(v => v.cliente);
+    let dadosValores = vendasSalvas.map(v => v.valor);
+
+    // Se já existir um gráfico criado antes, destruímos ele para atualizar sem bugar
+    if (meuGrafico) {
+        meuGrafico.destroy();
+    }
+
+    // Cria o novo gráfico usando Chart.js
+    meuGrafico = new Chart(ctx, {
+        type: 'bar', // Pode trocar por 'line' se preferir gráfico de linha
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Valor da Venda (R$)',
+                data: dadosValores,
+                backgroundColor: '#3d22d4',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+atualizarGrafico();

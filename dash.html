@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Vendas</title>
@@ -32,7 +33,7 @@
             font-size: 20px;
             margin-bottom: 30px;
             text-align: center;
-            color: #00ff88;
+            color: #708bdf;
         }
 
         aside a {
@@ -144,7 +145,7 @@
     <aside>
         <h2>Painel de Vendas</h2>
         <a href="#" class="active">Home / Dashboard</a>
-        <a href="#">Cadastro de Venda</a>
+        <a href="index.html">Cadastro de Venda</a>
         <a href="#">Consulta de Venda</a>
         <a href="#">Consulta Comissão</a>
         <a href="#">Onboarding</a>
@@ -160,26 +161,30 @@
         <div class="cards-container">
             <div class="card">
                 <h3>Valor Acumulado (Mês)</h3>
-                <p>R$ 14.500,00</p>
+                <p id="card-acumulado"></p>
             </div>
             <div class="card">
                 <h3>Média de Vendas</h3>
-                <p>R$ 2.900,00</p>
+                <p id="card-media"></p>
             </div>
             <div class="card">
                 <h3>Total de Vendas</h3>
-                <p>5 Registros</p>
+                <p id="card-total"></p>
             </div>
         </div>
 
         <!-- Seção Gráfico e Últimas Vendas -->
-        <div class="dashboard-grid">
-            <div class="box">
-                <h3>Gráfico da Média das Vendas</h3>
-                <div class="grafico-placeholder">
-                    [Espaço reservado para o Gráfico]
+            <div class="dashboard-grid">
+
+                <!-- Caixa do Gráfico -->
+                <div class="box">
+                    <h3>Gráfico da Média das Vendas</h3>
+                    
+                    <!-- A jaula do gráfico (substitui o antigo placeholder) -->
+                    <div style="position: relative; height: 250px; width: 100%;">
+                        <canvas id="graficoVendas"></canvas>
+                    </div>
                 </div>
-            </div>
 
             <div class="box">
                 <h3>Últimas Vendas</h3>
