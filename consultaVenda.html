@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Vendas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f4f7f6;
+        }
+
+        /* Menu Lateral (O mesmo das outras páginas) */
+        aside {
+            width: 250px;
+            background-color: #1e1e2d;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        aside h2 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #007BFF; 
+        }
+
+        aside a {
+            color: #a2a2b5;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        aside a:hover, aside a.active {
+            background-color: #2a2a3c;
+            color: #fff;
+        }
+
+        /* Conteúdo Principal */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Caixa Branca (Alargada para a tabela e filtro) */
+        .box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-width: 800px; /* Mais larga para caber a tabela legal */
+            width: 100%;
+            margin: 0 auto 20px auto; /* Centraliza e dá espaço embaixo */
+        }
+
+        /* Organização do Filtro lado a lado */
+        .filtro-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end; /* Alinha os botões com a base dos inputs */
+        }
+
+        .campo-filtro {
+            flex: 1; /* Faz os campos dividirem o espaço igualmente */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #007BFF;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            height: 43px; /* Mesma altura do input */
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Botão secundário para limpar o filtro */
+        .btn-limpar {
+            background-color: #6c757d;
+        }
+        
+        .btn-limpar:hover {
+            background-color: #5a6268;
+        }
+
+        /* Tabela de Resultados */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        table th {
+            color: #777;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Lateral -->
+    <aside>
+        <h2>Painel de Vendas</h2>
+        <a href="dash.html">Home / Dashboard</a> 
+        <a href="cadastroVenda.html">Cadastro de Venda</a> 
+        <a href="consultaVenda.html" class="active">Consulta de Venda</a> <!-- Ativo! -->
+        <a href="consultaComissao.html">Consulta Comissão</a>
+        <a href="#">Onboarding</a>
+    </aside>
+
+    <main>
+        <header>
+            <h1>Consulta de Vendas</h1>
+        </header>
+
+        <!-- Caixa de Filtros -->
+        <div class="box">
+            <div class="filtro-container">
+                <div class="campo-filtro">
+                    <label>Data Inicial:</label>
+                    <input type="date" id="data-inicio">
+                </div>
+                <div class="campo-filtro">
+                    <label>Data Final:</label>
+                    <input type="date" id="data-fim">
+                </div>
+                <button id="btn-filtrar">Filtrar</button>
+                <button id="btn-limpar" class="btn-limpar">Limpar</button>
+            </div>
+        </div>
+
+        <!-- Caixa da Tabela -->
+        <div class="box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                        <th>Meses (Desc.)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-consulta">
+                    <!-- O JavaScript vai injetar as linhas aqui -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

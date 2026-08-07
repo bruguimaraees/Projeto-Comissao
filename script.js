@@ -154,3 +154,80 @@ function atualizarGrafico() {
 }
 
 atualizarGrafico();
+
+// ==========================================
+// LÓGICA DA TELA DE CONSULTA DE VENDAS
+// ==========================================
+
+function carregarConsultaVendas(vendasParaMostrar = null) {
+    let corpoTabela = document.getElementById("tabela-consulta");
+    
+    // Se não estivermos na tela de consulta, a função para por aqui para não dar erro
+    if (!corpoTabela) return; 
+
+    // Se não passarmos vendas filtradas, ele pega a lista inteira
+    let vendas = vendasParaMostrar || JSON.parse(localStorage.getItem("listaVendas")) || [];
+    
+    // Limpa a tabela antes de preencher
+    corpoTabela.innerHTML = "";
+
+    // Mensagem amigável caso não ache nada
+    if (vendas.length === 0) {
+        corpoTabela.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Nenhuma venda encontrada para este período.</td></tr>`;
+        return;
+    }
+
+    // Preenche a tabela linha por linha
+    vendas.forEach(function(venda) {
+        // Formata a data (de AAAA-MM-DD para DD/MM/AAAA)
+        let dataFormatada = venda.data.split('-').reverse().join('/');
+        
+        let linha = document.createElement("tr");
+        linha.innerHTML = `
+            <td>${venda.cliente}</td>
+            <td>${dataFormatada}</td>
+            <td>R$ ${venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            <td>${venda.mesesDesconto}</td>
+        `;
+        corpoTabela.appendChild(linha);
+    });
+}
+
+// Botão Filtrar
+let btnFiltrar = document.getElementById("btn-filtrar");
+if (btnFiltrar) {
+    btnFiltrar.addEventListener("click", function() {
+        let dataInicio = document.getElementById("data-inicio").value;
+        let dataFim = document.getElementById("data-fim").value;
+        let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+
+        // Verifica se o usuário preencheu os dois campos
+        if (!dataInicio || !dataFim) {
+            alert("Por favor, selecione a Data Inicial e a Data Final.");
+            return;
+        }
+
+        // A mágica do JavaScript: O método .filter() separa só o que queremos
+        let vendasFiltradas = vendasSalvas.filter(function(venda) {
+            // No HTML, datas vêm no formato AAAA-MM-DD. O JS consegue comparar isso diretamente!
+            return venda.data >= dataInicio && venda.data <= dataFim;
+        });
+
+        carregarConsultaVendas(vendasFiltradas);
+    });
+}
+
+// Botão Limpar Filtro
+let btnLimpar = document.getElementById("btn-limpar");
+if (btnLimpar) {
+    btnLimpar.addEventListener("click", function() {
+        document.getElementById("data-inicio").value = "";
+        document.getElementById("data-fim").value = "";
+        
+        // Chama a função vazia para carregar todas as vendas de novo
+        carregarConsultaVendas(); 
+    });
+}
+
+// Carrega todas as vendas assim que a página de consulta for aberta
+carregarConsultaVendas();
