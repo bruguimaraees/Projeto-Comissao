@@ -290,3 +290,166 @@ if (btnCalcularComissao) {
         document.getElementById("res-valor-comissao").innerText = `R$ ${valorComissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     });
 }
+
+// ==========================================
+// LÓGICA DA TELA DE ONBOARDING
+// ==========================================
+
+let btnSalvarOnb = document.getElementById("btn-salvar-onb");
+
+if (btnSalvarOnb) {
+    btnSalvarOnb.addEventListener("click", function(e) {
+        e.preventDefault();
+        
+        let cliente = document.getElementById("onb-cliente").value;
+        let dataAgendamento = document.getElementById("onb-data").value;
+        let planilhaOk = document.getElementById("onb-planilha").checked;
+        let manualOk = document.getElementById("onb-manual").checked;
+        let obs = document.getElementById("onb-obs").value;
+
+        if (!cliente) {
+            alert("Por favor, preencha o nome do cliente.");
+            return;
+        }
+
+        // Criamos a ficha do onboarding, anotando o mês e ano em que ele foi criado!
+        let dataAtual = new Date();
+        let novoOnboarding = {
+            id: Date.now(), // Cria um identificador único baseado no milissegundo atual
+            cliente: cliente,
+            dataAgendamento: dataAgendamento,
+            planilhaOk: planilhaOk,
+            manualOk: manualOk,
+            obs: obs,
+            mesCriacao: dataAtual.getMonth(),
+            anoCriacao: dataAtual.getFullYear()
+        };
+
+        let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+        listaOnboarding.push(novoOnboarding);
+        localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
+
+        // Limpa os campos após salvar
+        document.getElementById("onb-cliente").value = "";
+        document.getElementById("onb-data").value = "";
+        document.getElementById("onb-planilha").checked = false;
+        document.getElementById("onb-manual").checked = false;
+        document.getElementById("onb-obs").value = "";
+
+        carregarTabelaOnboarding();
+    });
+}
+
+// Função para desenhar a tabela com a regra da virada de mês
+function carregarTabelaOnboarding() {
+    let corpoTabela = document.getElementById("tabela-onboarding");
+    if (!corpoTabela) return;
+
+    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    let mesAtual = new Date().getMonth();
+    let anoAtual = new Date().getFullYear();
+
+    corpoTabela.innerHTML = "";
+
+    // A MÁGICA DA VIRADA DE MÊS ACONTECE AQUI NO FILTER
+    let listaFiltrada = listaOnboarding.filter(function(item) {
+        let ehDoMesAtual = (item.mesCriacao === mesAtual && item.anoCriacao === anoAtual);
+        let estaTudoConcluido = (item.planilhaOk === true && item.manualOk === true);
+
+        if (ehDoMesAtual) {
+            return true; // É desse mês? Mostra na tela!
+        } else {
+            // É de meses passados? Só mostra se tiver pendência.
+            if (estaTudoConcluido) {
+                return false; // Se tá tudo OK, some da tela.
+            } else {
+                return true; // Se falta check, continua cobrando!
+            }
+        }
+    });
+
+    if (listaFiltrada.length === 0) {
+        corpoTabela.innerHTML = `<tr><td colspan="5" style="padding: 20px;">Nenhuma implantação pendente no momento.</td></tr>`;
+        return;
+    }
+
+    listaFiltrada.forEach(function(item) {
+        let dataFormatada = item.dataAgendamento ? item.dataAgendamento.split('-').reverse().join('/') : '-';
+        
+        let linha = document.createElement("tr");
+        linha.innerHTML = `
+            <td><strong>${item.cliente}</strong></td>
+            <td>${dataFormatada}</td>
+            
+            <!-- Injetamos uma função no clique do checkbox para atualizar o sistema -->
+            <td>
+                <input type="checkbox" class="check-tabela" 
+                onchange="atualizarCheckOnboarding(${item.id}, 'planilhaOk')" 
+                ${item.planilhaOk ? "checked" : ""}>
+            </td>
+            
+            <td>
+                <input type="checkbox" class="check-tabela" 
+                onchange="atualizarCheckOnboarding(${item.id}, 'manualOk')" 
+                ${item.manualOk ? "checked" : ""}>
+            </td>
+            
+            <td style="font-size: 12px; color: #555; max-width: 200px;">${item.obs}</td>
+        `;
+        corpoTabela.appendChild(linha);
+    });
+}
+
+// Função invocada quando você clica em um checkbox direto na tabela
+function atualizarCheckOnboarding(id, qualCheckbox) {
+    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    
+    // Procura na lista qual é o cliente que tem esse ID
+    let index = listaOnboarding.findIndex(item => item.id === id);
+    
+    if (index !== -1) {
+        // Inverte o valor (se era true vira false, se era false vira true)
+        listaOnboarding[index][qualCheckbox] = !listaOnboarding[index][qualCheckbox];
+        
+        // Salva de volta no sistema
+        localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
+        
+        // Recarrega a tabela (se o mês já virou e você marcou o último check, ele vai sumir da tela instantaneamente!)
+        carregarTabelaOnboarding(); 
+    }
+}
+
+carregarTabelaOnboarding();
+
+// ==========================================
+// PREENCHER DROPDOWN DE CLIENTES NO ONBOARDING
+// ==========================================
+
+function preencherDropdownClientes() {
+    let selectCliente = document.getElementById("onb-cliente");
+    
+    // Se não estivermos na tela de onboarding, a função para por aqui
+    if (!selectCliente) return; 
+
+    // 1. Busca as vendas salvas
+    let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+    
+    // Dica Nerd de Front-end: Como um mesmo cliente pode ter feito 2 compras separadas,
+    // nós usamos um comando chamado 'Set' para arrancar fora os nomes repetidos. 
+    // Assim, o nome do cliente só aparece uma vez na sua lista!
+    let nomesUnicos = [...new Set(vendasSalvas.map(venda => venda.cliente))];
+
+    // 2. Limpa o select (mantendo só a opção padrão)
+    selectCliente.innerHTML = '<option value="">Selecione um cliente das vendas...</option>';
+
+    // 3. Cria uma <option> nova para cada cliente encontrado
+    nomesUnicos.forEach(function(nome) {
+        let opcao = document.createElement("option");
+        opcao.value = nome;
+        opcao.textContent = nome;
+        selectCliente.appendChild(opcao);
+    });
+}
+
+// Executa a função assim que a página abrir
+preencherDropdownClientes();

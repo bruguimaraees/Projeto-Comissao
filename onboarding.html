@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding de Clientes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #f4f7f6; }
+
+        /* Menu Lateral Padrão */
+        aside { width: 250px; background-color: #1e1e2d; color: #fff; display: flex; flex-direction: column; padding: 20px; }
+        aside h2 { font-size: 20px; margin-bottom: 30px; text-align: center; color: #007BFF; }
+        aside a { color: #a2a2b5; text-decoration: none; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; transition: 0.3s; }
+        aside a:hover, aside a.active { background-color: #2a2a3c; color: #fff; }
+
+        main { flex: 1; padding: 30px; overflow-y: auto; }
+        header h1 { font-size: 24px; color: #333; margin-bottom: 20px; text-align: center; }
+
+        /* Caixas Brancas */
+        .box { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 900px; width: 100%; margin: 0 auto 30px auto; }
+        
+        .grid-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .linha-inteira { grid-column: span 2; }
+
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; font-size: 14px; }
+        input[type="text"], input[type="date"], textarea, select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            font-size: 14px; 
+            outline: none; 
+            background-color: #fff; /* Fundo branco para o select */
+        }
+        input:focus, textarea:focus { border-color: #007BFF; }
+        
+        /* Ajuste do Checkbox no Formulário */
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: 20px; height: 20px; cursor: pointer; }
+        .checkbox-group label { margin-bottom: 0; cursor: pointer; }
+
+        button { width: 100%; padding: 14px; background-color: #007BFF; color: #ffffff; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+
+        /* Tabela de Onboarding */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table th, table td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
+        table th:first-child, table td:first-child { text-align: left; } /* Nome alinhado a esquerda */
+        table th { color: #777; background-color: #f8f9fa; }
+        
+        /* Checkbox grande na tabela */
+        .check-tabela { width: 22px; height: 22px; cursor: pointer; accent-color: #28a745; }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Lateral -->
+    <aside>
+        <h2>Painel de Vendas</h2>
+        <a href="dash.html">Home / Dashboard</a> 
+        <a href="cadastroVenda.html">Cadastro de Venda</a> 
+        <a href="consultaVenda.html">Consulta de Venda</a> 
+        <a href="consultaComissao.html">Consulta Comissão</a>
+        <a href="onboarding.html" class="active">Onboarding</a> <!-- Ativo! -->
+    </aside>
+
+    <main>
+        <header>
+            <h1>Gestão de Onboarding</h1>
+        </header>
+
+        <!-- Formulário para Cadastrar novo Cliente no Onboarding -->
+        <div class="box">
+            <div class="grid-formulario">
+                <div>
+                    <label>Nome do Cliente / Empresa:</label>
+                    <select id="onb-cliente">
+                        <option value="">Selecione um cliente das vendas...</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Data de Agendamento:</label>
+                    <input type="date" id="onb-data">
+                </div>
+                
+                <!-- Checkboxes Iniciais -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="onb-planilha">
+                    <label for="onb-planilha">Planilha de Usuários Preenchida</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="onb-manual">
+                    <label for="onb-manual">Manual de Passagem Concluído</label>
+                </div>
+
+                <div class="linha-inteira">
+                    <label>Observações:</label>
+                    <textarea id="onb-obs" rows="3" placeholder="Detalhes importantes, contatos, etc..."></textarea>
+                </div>
+            </div>
+            <button id="btn-salvar-onb">Adicionar ao Onboarding</button>
+        </div>
+
+        <!-- Tabela Dinâmica -->
+        <div class="box">
+            <h3 style="margin-bottom: 15px; color: #444;">Acompanhamento Ativo</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Agendamento</th>
+                        <th>Planilha OK?</th>
+                        <th>Manual OK?</th>
+                        <th>Obs</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-onboarding">
+                    <!-- O JavaScript vai injetar as linhas aqui -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
