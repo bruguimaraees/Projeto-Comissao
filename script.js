@@ -24,27 +24,59 @@ let campoDesconto = document.getElementById("meses-desconto")
 let btnSalvar = document.getElementById("botao-salvar")
 let campoResult = document.getElementById("texto-resultado")
 
-btnSalvar.addEventListener("click", function() {
-    event.preventDefault();
+if (btnSalvar){
 
-    // 1. Cria a fichinha com os dados da tela
-    let dadosDaVenda = {
-        cliente: campoCliente.value,
-        data: campoData.value,
-        valor: Number(campoVenda.value),
-        mesesDesconto: Number(campoDesconto.value)
-    };
+    btnSalvar.addEventListener("click", function() {
+        event.preventDefault();
 
-    // 2. Busca o que já estava salvo ou cria uma lista vazia
+        // 1. Cria a fichinha com os dados da tela
+        let dadosDaVenda = {
+            cliente: campoCliente.value,
+            data: campoData.value,
+            valor: Number(campoVenda.value),
+            mesesDesconto: Number(campoDesconto.value)
+        };
+
+        // 2. Busca o que já estava salvo ou cria uma lista vazia
+        let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+
+        // 3. Adiciona a venda nova na lista
+        vendasSalvas.push(dadosDaVenda);
+
+        // 4. Salva tudo de volta no navegador
+        localStorage.setItem("listaVendas", JSON.stringify(vendasSalvas));
+
+        console.log(dadosDaVenda);
+
+        alert("Venda registrada com sucesso!");
+
+        atualizarTabela();
+    });
+
+}
+    
+
+function atualizarTabela(){
+
     let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+    let corpoTabela = document.getElementById("tabela-ultimas-vendas");
 
-    // 3. Adiciona a venda nova na lista
-    vendasSalvas.push(dadosDaVenda);
+    if (!corpoTabela) return;
 
-    // 4. Salva tudo de volta no navegador
-    localStorage.setItem("listaVendas", JSON.stringify(vendasSalvas));
+    corpoTabela.innerHTML ="";         //limpa o conteúdo para evitar duplicidade
 
-    console.log(dadosDaVenda);
+    vendasSalvas.forEach(function(venda) {
+        let linha = document.createElement("tr");
 
-    alert("Venda registrada com sucesso!");
-});
+        linha.innerHTML = `
+            <td>${venda.cliente}</td>
+            <td>R$ ${venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+        `;
+
+        corpoTabela.appendChild(linha);
+    });
+
+
+}
+
+atualizarTabela();
