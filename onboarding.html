@@ -31,7 +31,7 @@
             border-radius: 6px; 
             font-size: 14px; 
             outline: none; 
-            background-color: #fff; /* Fundo branco para o select */
+            background-color: #fff; 
         }
         input:focus, textarea:focus { border-color: #007BFF; }
         
@@ -46,11 +46,97 @@
         /* Tabela de Onboarding */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         table th, table td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
-        table th:first-child, table td:first-child { text-align: left; } /* Nome alinhado a esquerda */
+        table th:first-child, table td:first-child { text-align: left; } 
         table th { color: #777; background-color: #f8f9fa; }
         
         /* Checkbox grande na tabela */
         .check-tabela { width: 22px; height: 22px; cursor: pointer; accent-color: #28a745; }
+
+        /* Botão de Editar */
+        .btn-editar {
+            background-color: #ffc107;
+            color: #333;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-editar:hover { background-color: #e0a800; }
+
+        /* Estilos do Modal Customizado (Oculto por padrão) */
+        .modal-overlay {
+            display: none; 
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); 
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Classe ativada pelo JS para mostrar o modal centralizado */
+        .modal-overlay.mostrar {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-botoes {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .modal-botoes button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-cancelar { background-color: #e4e4e4; color: #333; }
+        .btn-cancelar:hover { background-color: #ccc; }
+        .btn-confirmar { background-color: #3d22d4; color: #fff; }
+        .btn-confirmar:hover { background-color: #2d17a4; }
+
+        /* Estilo da Caixinha de Notificação (Toast) */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #28a745; /* Verde sucesso */
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px 20px;
+            position: fixed;
+            z-index: 3000;
+            right: 30px;
+            top: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        .toast.mostrar {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +148,7 @@
         <a href="cadastroVenda.html">Cadastro de Venda</a> 
         <a href="consultaVenda.html">Consulta de Venda</a> 
         <a href="consultaComissao.html">Consulta Comissão</a>
-        <a href="onboarding.html" class="active">Onboarding</a> <!-- Ativo! -->
+        <a href="onboarding.html" class="active">Onboarding</a>
     </aside>
 
     <main>
@@ -113,6 +199,7 @@
                         <th>Planilha OK?</th>
                         <th>Manual OK?</th>
                         <th>Obs</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-onboarding">
@@ -120,6 +207,32 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Modal de Edição de Onboarding (Flutuante) -->
+        <div id="modal-editar-onb" class="modal-overlay">
+            <div class="modal-content">
+                <h3 style="color: #333; margin-bottom: 15px;">✏️ Editar Acompanhamento</h3>
+                
+                <div style="text-align: left; margin-bottom: 15px;">
+                    <label style="font-size: 13px; font-weight: bold; color: #555;">Nova Data de Agendamento:</label>
+                    <input type="date" id="edit-onb-data" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <label style="font-size: 13px; font-weight: bold; color: #555;">Observações:</label>
+                    <textarea id="edit-onb-obs" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; height: 80px; resize: none;"></textarea>
+                </div>
+
+                <div class="modal-botoes">
+                    <button id="btn-cancelar-edicao" class="btn-cancelar">Cancelar</button>
+                    <button id="btn-salvar-edicao" class="btn-confirmar">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Caixinha de Notificação de Sucesso (Toast Verde) -->
+    <div id="toast-onboarding" class="toast">Acompanhamento atualizado com sucesso! ✅</div>
+
     </main>
 
     <script src="script.js"></script>

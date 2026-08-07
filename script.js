@@ -25,8 +25,7 @@ let btnSalvar = document.getElementById("botao-salvar")
 let campoResult = document.getElementById("texto-resultado")
 
 if (btnSalvar){
-
-    btnSalvar.addEventListener("click", function() {
+    btnSalvar.addEventListener("click", function(event) {
         event.preventDefault();
 
         // 1. Cria a fichinha com os dados da tela
@@ -48,12 +47,25 @@ if (btnSalvar){
 
         console.log(dadosDaVenda);
 
-        alert("Venda registrada com sucesso!");
+        // Busca a caixinha lá no HTML
+        let toast = document.getElementById("toast-sucesso");
+        
+        if (toast) {
+            // Adiciona a classe que faz a caixinha aparecer na tela
+            toast.classList.add("mostrar");
+            
+            // O setTimeout é um relógio. Aqui mandamos ele esperar 3 segundos (3000ms) e remover a classe
+            setTimeout(function() {
+                toast.classList.remove("mostrar");
+            }, 3000);
+        } else {
+            // Se der algum erro e ele não achar a caixa nova, mostra o alert velho por segurança
+            alert("Venda registrada com sucesso!");
+        }
 
         atualizarTabela();
         atualizarGrafico();
     });
-
 }
     
 
@@ -62,7 +74,7 @@ function atualizarTabela(){
     let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
     
     // 2. Inverte a ordem para a venda mais recente aparecer no topo
-    vendasSalvas.reverse(); 
+    let vendasCopia = [...vendasSalvas].reverse(); 
 
     // 3. Pega os elementos da tabela e dos cards pelo ID
     let corpoTabela = document.getElementById("tabela-ultimas-vendas");
@@ -77,7 +89,7 @@ function atualizarTabela(){
     if (corpoTabela) {
         corpoTabela.innerHTML =""; 
 
-        vendasSalvas.forEach(function(venda) {
+        vendasCopia.forEach(function(venda) {
             valorAcumulado += venda.valor; // Soma o valor para o total acumulado
 
             let linha = document.createElement("tr");
@@ -173,13 +185,12 @@ function carregarConsultaVendas(vendasParaMostrar = null) {
 
     // Mensagem amigável caso não ache nada
     if (vendas.length === 0) {
-        corpoTabela.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Nenhuma venda encontrada para este período.</td></tr>`;
+        corpoTabela.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Nenhuma venda encontrada para este período.</td></tr>`;
         return;
     }
 
     // Preenche a tabela linha por linha
-    vendas.forEach(function(venda) {
-        // Formata a data (de AAAA-MM-DD para DD/MM/AAAA)
+    vendas.forEach(function(venda, index) { // <--- PEGAMOS O 'index' AQUI
         let dataFormatada = venda.data.split('-').reverse().join('/');
         
         let linha = document.createElement("tr");
@@ -188,8 +199,70 @@ function carregarConsultaVendas(vendasParaMostrar = null) {
             <td>${dataFormatada}</td>
             <td>R$ ${venda.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
             <td>${venda.mesesDesconto}</td>
+            <td><button class="btn-excluir" onclick="deletarVenda(${index})">Excluir</button></td> <!-- BOTÃO DELETAR -->
         `;
         corpoTabela.appendChild(linha);
+    });
+}
+
+// ==========================================
+// FUNÇÃO DE DELETAR VENDA (COM MODAL CUSTOMIZADO)
+// ==========================================
+
+// Variável para guardar o número da venda que o usuário quer apagar
+let indexParaDeletar = null; 
+
+function deletarVenda(index) {
+    indexParaDeletar = index; // Salva a posição da venda
+    
+    // Faz a caixinha bonitinha aparecer na tela
+    let modal = document.getElementById("modal-confirmacao");
+    if(modal) modal.classList.add("mostrar");
+}
+
+// Lógica dos botões de dentro da caixinha nova
+let btnCancelarExclusao = document.getElementById("btn-cancelar-exclusao");
+let btnConfirmarExclusao = document.getElementById("btn-confirmar-exclusao");
+
+// Se ele clicar em "Cancelar"
+if (btnCancelarExclusao) {
+    btnCancelarExclusao.addEventListener("click", function() {
+        let modal = document.getElementById("modal-confirmacao");
+        if(modal) modal.classList.remove("mostrar");
+        indexParaDeletar = null; // Limpa a memória
+    });
+}
+
+// Se ele clicar em "Sim, excluir"
+if (btnConfirmarExclusao) {
+    btnConfirmarExclusao.addEventListener("click", function() {
+        if (indexParaDeletar !== null) {
+            // 1. Pega os dados e remove a venda
+            let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+            vendasSalvas.splice(indexParaDeletar, 1);
+            localStorage.setItem("listaVendas", JSON.stringify(vendasSalvas));
+
+            // 2. Atualiza a tela
+            if (typeof carregarConsultaVendas === "function") carregarConsultaVendas();
+            if (typeof atualizarTabela === "function") atualizarTabela();
+            if (typeof atualizarGrafico === "function") atualizarGrafico();
+
+            // 3. Esconde o Modal
+            let modal = document.getElementById("modal-confirmacao");
+            if(modal) modal.classList.remove("mostrar");
+
+            // 4. Mostra o Toast de sucesso (a notificação que some sozinha)
+            let toast = document.getElementById("toast-exclusao");
+            if (toast) {
+                toast.classList.add("mostrar");
+                setTimeout(function() {
+                    toast.classList.remove("mostrar");
+                }, 3000);
+            }
+
+            // Limpa a memória
+            indexParaDeletar = null;
+        }
     });
 }
 
@@ -236,58 +309,131 @@ carregarConsultaVendas();
 // LÓGICA DA TELA DE CÁLCULO DE COMISSÃO
 // ==========================================
 
-// Pega o botão da tela de comissão
 let btnCalcularComissao = document.getElementById("btn-calcular-comissao");
 
-// Só executa se o botão existir (ou seja, só se estivermos na tela certa)
 if (btnCalcularComissao) {
     btnCalcularComissao.addEventListener("click", function() {
-        
-        // 1. Pega os valores das datas digitadas
         let dataInicio = document.getElementById("comissao-data-inicio").value;
         let dataFim = document.getElementById("comissao-data-fim").value;
         
-        // Trava de segurança se o usuário esquecer a data
         if (!dataInicio || !dataFim) {
-            alert("Por favor, selecione a Data Inicial e a Data Final para calcular.");
+            alert("Por favor, selecione a Data Inicial e a Data Final.");
             return;
         }
 
-        // 2. Busca todas as vendas e filtra pelo período exato (igual fizemos na outra tela)
         let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
-        
-        let vendasFiltradas = vendasSalvas.filter(function(venda) {
+
+        // 1. CONTROLE DE META: Vendas feitas EXATAMENTE no mês filtrado
+        let vendasDoMes = vendasSalvas.filter(function(venda) {
             return venda.data >= dataInicio && venda.data <= dataFim;
         });
 
-        // 3. Soma o valor de todas as vendas desse período
-        let totalVendidoPeriodo = 0;
-        vendasFiltradas.forEach(function(venda) {
-            totalVendidoPeriodo += venda.valor;
+        vendasDoMes.sort((a, b) => a.data.localeCompare(b.data));
+
+        let totalVendidoMes = 0;
+        let comissaoGeradaNoMes = 0;
+        let comissaoRetidaDesteMes = 0;
+
+        vendasDoMes.forEach(function(venda) {
+            let valorVenda = venda.valor;
+            let comissaoDestaVenda = 0;
+
+            if (totalVendidoMes >= 7500) {
+                comissaoDestaVenda = (valorVenda * 80) / 100;
+            } else {
+                if (totalVendidoMes + valorVenda <= 7500) {
+                    comissaoDestaVenda = (valorVenda * 40) / 100;
+                } else {
+                    let valorAteMeta = 7500 - totalVendidoMes;
+                    let valorAcimaMeta = valorVenda - valorAteMeta;
+                    comissaoDestaVenda = ((valorAteMeta * 40) / 100) + ((valorAcimaMeta * 80) / 100);
+                }
+            }
+            totalVendidoMes += valorVenda;
+            comissaoGeradaNoMes += comissaoDestaVenda;
+
+            let mesesDeCarencia = Number(venda.mesesDesconto) || 0;
+            if (mesesDeCarencia > 0) {
+                comissaoRetidaDesteMes += comissaoDestaVenda;
+            }
         });
 
-        // =========================================================
-        // 4. A HORA DA MÁGICA: Chamamos a SUA função passando o total!
-        // =========================================================
-        let valorComissao = registroVendas(totalVendidoPeriodo);
+        // 2. COMISSÃO A RECEBER NO PERÍODO FILTRADO (Correção da linha do tempo e carência)
+        
+        let partesInicio = dataInicio.split('-').map(Number);
+        let numInicio = partesInicio[0] * 12 + partesInicio[1]; 
 
-        // 5. Injeta os resultados nos Cards da tela
+        let partesFim = dataFim.split('-').map(Number);
+        let numFim = partesFim[0] * 12 + partesFim[1];
         
-        // Card 1: Total Vendido
-        document.getElementById("res-total-vendido").innerText = `R$ ${totalVendidoPeriodo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        let comissaoReceberNesteMes = 0;
+
+        vendasSalvas.forEach(function(venda) {
+            let partesDataVenda = venda.data.split('-').map(Number);
+            let anoVenda = partesDataVenda[0];
+            let mesVenda = partesDataVenda[1];
+            let mesesDeCarencia = Number(venda.mesesDesconto) || 0;
+
+            let mesRecebimento = mesVenda + mesesDeCarencia + 1;
+            let anoRecebimento = anoVenda;
+
+            while (mesRecebimento > 12) {
+                mesRecebimento -= 12;
+                anoRecebimento += 1;
+            }
+
+            let numRecebimento = anoRecebimento * 12 + mesRecebimento;
+
+            if (numRecebimento >= numInicio && numRecebimento <= numFim) {
+                
+                let vendasDaquelaEpoca = vendasSalvas.filter(function(v) {
+                    let pV = v.data.split('-');
+                    return Number(pV[0]) === anoVenda && Number(pV[1]) === mesVenda;
+                });
+                vendasDaquelaEpoca.sort((a, b) => a.data.localeCompare(b.data));
+                
+                let acumuladoAteEla = 0;
+                let comissaoCalculadaDela = 0;
+
+                for (let v of vendasDaquelaEpoca) {
+                    let comissaoItem = 0;
+                    if (acumuladoAteEla >= 7500) {
+                        comissaoItem = (v.valor * 80) / 100;
+                    } else {
+                        if (acumuladoAteEla + v.valor <= 7500) {
+                            comissaoItem = (v.valor * 40) / 100;
+                        } else {
+                            let p1 = 7500 - acumuladoAteEla;
+                            let p2 = v.valor - p1;
+                            comissaoItem = ((p1 * 40) / 100) + ((p2 * 80) / 100);
+                        }
+                    }
+                    acumuladoAteEla += v.valor;
+
+                    if (v.cliente === venda.cliente && v.data === venda.data && v.valor === venda.valor) {
+                        comissaoCalculadaDela = comissaoItem;
+                        break;
+                    }
+                }
+
+                comissaoReceberNesteMes += comissaoCalculadaDela;
+            }
+        });
+
+        // 3. INJETA NOS CARDS
+        document.getElementById("res-total-vendido").innerText = `R$ ${totalVendidoMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
         
-        // Card 2: Meta Atingida (Muda o texto e a cor dependendo do resultado!)
         let cardMeta = document.getElementById("res-meta-atingida");
-        if (totalVendidoPeriodo >= 7500) {
+        if (totalVendidoMes >= 7500) {
             cardMeta.innerText = "Sim! 🚀";
-            cardMeta.style.color = "#28a745"; // Verde
+            cardMeta.style.color = "#28a745";
         } else {
             cardMeta.innerText = "Não 😢";
-            cardMeta.style.color = "#dc3545"; // Vermelho
+            cardMeta.style.color = "#dc3545";
         }
 
-        // Card 3: O valor final da Comissão (o resultado da sua função)
-        document.getElementById("res-valor-comissao").innerText = `R$ ${valorComissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById("res-valor-retido").innerText = `R$ ${comissaoRetidaDesteMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById("res-valor-comissao").innerText = `R$ ${comissaoReceberNesteMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     });
 }
 
@@ -312,10 +458,9 @@ if (btnSalvarOnb) {
             return;
         }
 
-        // Criamos a ficha do onboarding, anotando o mês e ano em que ele foi criado!
         let dataAtual = new Date();
         let novoOnboarding = {
-            id: Date.now(), // Cria um identificador único baseado no milissegundo atual
+            id: Date.now(),
             cliente: cliente,
             dataAgendamento: dataAgendamento,
             planilhaOk: planilhaOk,
@@ -329,7 +474,6 @@ if (btnSalvarOnb) {
         listaOnboarding.push(novoOnboarding);
         localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
 
-        // Limpa os campos após salvar
         document.getElementById("onb-cliente").value = "";
         document.getElementById("onb-data").value = "";
         document.getElementById("onb-planilha").checked = false;
@@ -340,7 +484,6 @@ if (btnSalvarOnb) {
     });
 }
 
-// Função para desenhar a tabela com a regra da virada de mês
 function carregarTabelaOnboarding() {
     let corpoTabela = document.getElementById("tabela-onboarding");
     if (!corpoTabela) return;
@@ -351,25 +494,23 @@ function carregarTabelaOnboarding() {
 
     corpoTabela.innerHTML = "";
 
-    // A MÁGICA DA VIRADA DE MÊS ACONTECE AQUI NO FILTER
     let listaFiltrada = listaOnboarding.filter(function(item) {
         let ehDoMesAtual = (item.mesCriacao === mesAtual && item.anoCriacao === anoAtual);
         let estaTudoConcluido = (item.planilhaOk === true && item.manualOk === true);
 
         if (ehDoMesAtual) {
-            return true; // É desse mês? Mostra na tela!
+            return true;
         } else {
-            // É de meses passados? Só mostra se tiver pendência.
             if (estaTudoConcluido) {
-                return false; // Se tá tudo OK, some da tela.
+                return false;
             } else {
-                return true; // Se falta check, continua cobrando!
+                return true;
             }
         }
     });
 
     if (listaFiltrada.length === 0) {
-        corpoTabela.innerHTML = `<tr><td colspan="5" style="padding: 20px;">Nenhuma implantação pendente no momento.</td></tr>`;
+        corpoTabela.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center;">Nenhuma implantação pendente no momento.</td></tr>`;
         return;
     }
 
@@ -380,69 +521,53 @@ function carregarTabelaOnboarding() {
         linha.innerHTML = `
             <td><strong>${item.cliente}</strong></td>
             <td>${dataFormatada}</td>
-            
-            <!-- Injetamos uma função no clique do checkbox para atualizar o sistema -->
             <td>
                 <input type="checkbox" class="check-tabela" 
                 onchange="atualizarCheckOnboarding(${item.id}, 'planilhaOk')" 
                 ${item.planilhaOk ? "checked" : ""}>
             </td>
-            
             <td>
                 <input type="checkbox" class="check-tabela" 
                 onchange="atualizarCheckOnboarding(${item.id}, 'manualOk')" 
                 ${item.manualOk ? "checked" : ""}>
             </td>
-            
-            <td style="font-size: 12px; color: #555; max-width: 200px;">${item.obs}</td>
+            <td style="font-size: 12px; color: #555; max-width: 200px;">${item.obs || '-'}</td>
+            <td><button class="btn-editar" id="btn-edit-${item.id}">Editar</button></td>
         `;
         corpoTabela.appendChild(linha);
+
+        // Forma segura para extensões do Chrome lidarem com o clique do botão Editar
+        let btnEditarLocal = document.getElementById(`btn-edit-${item.id}`);
+        if (btnEditarLocal) {
+            btnEditarLocal.addEventListener("click", function() {
+                abrirModalEdicao(item.id);
+            });
+        }
     });
 }
 
-// Função invocada quando você clica em um checkbox direto na tabela
 function atualizarCheckOnboarding(id, qualCheckbox) {
     let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
-    
-    // Procura na lista qual é o cliente que tem esse ID
     let index = listaOnboarding.findIndex(item => item.id === id);
     
     if (index !== -1) {
-        // Inverte o valor (se era true vira false, se era false vira true)
         listaOnboarding[index][qualCheckbox] = !listaOnboarding[index][qualCheckbox];
-        
-        // Salva de volta no sistema
         localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
-        
-        // Recarrega a tabela (se o mês já virou e você marcou o último check, ele vai sumir da tela instantaneamente!)
         carregarTabelaOnboarding(); 
     }
 }
 
 carregarTabelaOnboarding();
 
-// ==========================================
-// PREENCHER DROPDOWN DE CLIENTES NO ONBOARDING
-// ==========================================
-
 function preencherDropdownClientes() {
     let selectCliente = document.getElementById("onb-cliente");
-    
-    // Se não estivermos na tela de onboarding, a função para por aqui
     if (!selectCliente) return; 
 
-    // 1. Busca as vendas salvas
     let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
-    
-    // Dica Nerd de Front-end: Como um mesmo cliente pode ter feito 2 compras separadas,
-    // nós usamos um comando chamado 'Set' para arrancar fora os nomes repetidos. 
-    // Assim, o nome do cliente só aparece uma vez na sua lista!
     let nomesUnicos = [...new Set(vendasSalvas.map(venda => venda.cliente))];
 
-    // 2. Limpa o select (mantendo só a opção padrão)
     selectCliente.innerHTML = '<option value="">Selecione um cliente das vendas...</option>';
 
-    // 3. Cria uma <option> nova para cada cliente encontrado
     nomesUnicos.forEach(function(nome) {
         let opcao = document.createElement("option");
         opcao.value = nome;
@@ -451,5 +576,67 @@ function preencherDropdownClientes() {
     });
 }
 
-// Executa a função assim que a página abrir
 preencherDropdownClientes();
+
+// ==========================================
+// LÓGICA DE EDIÇÃO DE ONBOARDING
+// ==========================================
+
+let idItemEditando = null;
+
+function abrirModalEdicao(id) {
+    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    let item = listaOnboarding.find(obj => obj.id === id);
+
+    if (item) {
+        idItemEditando = id;
+        
+        document.getElementById("edit-onb-data").value = item.dataAgendamento || "";
+        document.getElementById("edit-onb-obs").value = item.obs || "";
+
+        let modalEdicao = document.getElementById("modal-editar-onb");
+        if (modalEdicao) modalEdicao.classList.add("mostrar");
+    }
+}
+
+let btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
+if (btnCancelarEdicao) {
+    btnCancelarEdicao.addEventListener("click", function() {
+        let modalEdicao = document.getElementById("modal-editar-onb");
+        if (modalEdicao) modalEdicao.classList.remove("mostrar");
+        idItemEditando = null;
+    });
+}
+
+let btnSalvarEdicao = document.getElementById("btn-salvar-edicao");
+if (btnSalvarEdicao) {
+    btnSalvarEdicao.addEventListener("click", function() {
+        if (idItemEditando !== null) {
+            let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+            let index = listaOnboarding.findIndex(obj => obj.id === idItemEditando);
+
+            if (index !== -1) {
+                listaOnboarding[index].dataAgendamento = document.getElementById("edit-onb-data").value;
+                listaOnboarding[index].obs = document.getElementById("edit-onb-obs").value;
+
+                localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
+
+                let modalEdicao = document.getElementById("modal-editar-onb");
+                if (modalEdicao) modalEdicao.classList.remove("mostrar");
+                
+                idItemEditando = null;
+                carregarTabelaOnboarding();
+
+                let toast = document.getElementById("toast-onboarding");
+                if (toast) {
+                    toast.classList.add("mostrar");
+                    setTimeout(function() {
+                        toast.classList.remove("mostrar");
+                    }, 3000);
+                } else {
+                    alert("Acompanhamento atualizado com sucesso!");
+                }
+            }
+        }
+    });
+}

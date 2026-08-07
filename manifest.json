@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Gestão de Vendas e Comissões",
+  "version": "1.0",
+  "description": "Sistema de controle de vendas, metas, comissões e onboarding.",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Abrir Painel de Vendas"
+  },
+  "permissions": [
+    "tabs"
+  ]
+}

@@ -120,6 +120,33 @@
             font-weight: bold;
             color: #28a745;
         }
+
+        /* Estilo da Caixinha de Sucesso (Toast) */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #28a745; /* Verde sucesso */
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px 20px;
+            position: fixed; /* Fixa a caixa na tela */
+            z-index: 1000;
+            right: 30px; /* Aparece no canto direito */
+            top: 30px; /* No topo da tela */
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        /* Classe mágica que o JavaScript vai usar para mostrar a caixa */
+        .toast.mostrar {
+            visibility: visible;
+            opacity: 1;
+        }
+
     </style>
 </head>
 <body>
@@ -161,6 +188,8 @@
             
             <p id="texto-resultado"></p>
         </div>
+        <!-- Caixinha de Notificação (Toast) -->
+    <div id="toast-sucesso" class="toast">Venda registrada com sucesso! 🎉</div>
     </main>
 
     <!-- Puxa o seu script para o botão funcionar -->
