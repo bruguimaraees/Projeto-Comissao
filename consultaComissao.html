@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Comissão</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f4f7f6;
+        }
+
+        /* Menu Lateral */
+        aside {
+            width: 250px;
+            background-color: #1e1e2d;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        aside h2 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #007BFF; 
+        }
+
+        aside a {
+            color: #a2a2b5;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        aside a:hover, aside a.active {
+            background-color: #2a2a3c;
+            color: #fff;
+        }
+
+        /* Conteúdo Principal */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Caixa do Filtro */
+        .box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto 30px auto; /* Centraliza e empurra os cards pra baixo */
+        }
+
+        .filtro-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .campo-filtro {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #007BFF;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            height: 43px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Cards de Resultado */
+        .cards-container {
+            display: flex;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid #007BFF; /* Bordinha azul em cima pra dar charme */
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Destaque especial para o card do dinheiro */
+        .card.destaque {
+            border-top-color: #28a745; /* Bordinha verde */
+        }
+        
+        .card.destaque p {
+            color: #28a745; /* Texto verde */
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Menu Lateral -->
+    <aside>
+        <h2>Painel de Vendas</h2>
+        <a href="dash.html">Home / Dashboard</a> 
+        <a href="cadastroVenda.html">Cadastro de Venda</a> 
+        <a href="consultaVenda.html">Consulta de Venda</a> 
+        <a href="consultaComissao.html" class="active">Consulta Comissão</a> <!-- Ativo! -->
+        <a href="onboarding.html">Onboarding</a>
+    </aside>
+
+    <main>
+        <header>
+            <h1>Cálculo de Comissão</h1>
+        </header>
+
+        <!-- Caixa de Filtros -->
+        <div class="box">
+            <div class="filtro-container">
+                <div class="campo-filtro">
+                    <label>Data Inicial:</label>
+                    <input type="date" id="comissao-data-inicio">
+                </div>
+                <div class="campo-filtro">
+                    <label>Data Final:</label>
+                    <input type="date" id="comissao-data-fim">
+                </div>
+                <button id="btn-calcular-comissao">Calcular Comissão</button>
+            </div>
+        </div>
+
+        <!-- Cards de Resultado -->
+        <div class="cards-container">
+            <div class="card">
+                <h3>Total Vendido no Período</h3>
+                <p id="res-total-vendido">R$ 0,00</p>
+            </div>
+            <div class="card">
+                <h3>Meta (R$ 7.500) Atingida?</h3>
+                <p id="res-meta-atingida">-</p>
+            </div>
+            <div class="card destaque">
+                <h3>Comissão a Receber</h3>
+                <p id="res-valor-comissao">R$ 0,00</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

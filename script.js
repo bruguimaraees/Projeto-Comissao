@@ -231,3 +231,62 @@ if (btnLimpar) {
 
 // Carrega todas as vendas assim que a página de consulta for aberta
 carregarConsultaVendas();
+
+// ==========================================
+// LÓGICA DA TELA DE CÁLCULO DE COMISSÃO
+// ==========================================
+
+// Pega o botão da tela de comissão
+let btnCalcularComissao = document.getElementById("btn-calcular-comissao");
+
+// Só executa se o botão existir (ou seja, só se estivermos na tela certa)
+if (btnCalcularComissao) {
+    btnCalcularComissao.addEventListener("click", function() {
+        
+        // 1. Pega os valores das datas digitadas
+        let dataInicio = document.getElementById("comissao-data-inicio").value;
+        let dataFim = document.getElementById("comissao-data-fim").value;
+        
+        // Trava de segurança se o usuário esquecer a data
+        if (!dataInicio || !dataFim) {
+            alert("Por favor, selecione a Data Inicial e a Data Final para calcular.");
+            return;
+        }
+
+        // 2. Busca todas as vendas e filtra pelo período exato (igual fizemos na outra tela)
+        let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+        
+        let vendasFiltradas = vendasSalvas.filter(function(venda) {
+            return venda.data >= dataInicio && venda.data <= dataFim;
+        });
+
+        // 3. Soma o valor de todas as vendas desse período
+        let totalVendidoPeriodo = 0;
+        vendasFiltradas.forEach(function(venda) {
+            totalVendidoPeriodo += venda.valor;
+        });
+
+        // =========================================================
+        // 4. A HORA DA MÁGICA: Chamamos a SUA função passando o total!
+        // =========================================================
+        let valorComissao = registroVendas(totalVendidoPeriodo);
+
+        // 5. Injeta os resultados nos Cards da tela
+        
+        // Card 1: Total Vendido
+        document.getElementById("res-total-vendido").innerText = `R$ ${totalVendidoPeriodo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        
+        // Card 2: Meta Atingida (Muda o texto e a cor dependendo do resultado!)
+        let cardMeta = document.getElementById("res-meta-atingida");
+        if (totalVendidoPeriodo >= 7500) {
+            cardMeta.innerText = "Sim! 🚀";
+            cardMeta.style.color = "#28a745"; // Verde
+        } else {
+            cardMeta.innerText = "Não 😢";
+            cardMeta.style.color = "#dc3545"; // Vermelho
+        }
+
+        // Card 3: O valor final da Comissão (o resultado da sua função)
+        document.getElementById("res-valor-comissao").innerText = `R$ ${valorComissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    });
+}
