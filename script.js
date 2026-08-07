@@ -1,3 +1,11 @@
+// Restaura os dados salvos do Chrome antes de desenhar a tela
+db.inicializar(function() {
+    if (typeof carregarTabelaOnboarding === "function") carregarTabelaOnboarding();
+    if (typeof atualizarTabela === "function") atualizarTabela();
+    if (typeof atualizarGrafico === "function") atualizarGrafico();
+    if (typeof carregarConsultaVendas === "function") carregarConsultaVendas();
+});
+
 // 1. O MOTOR MATEMÁTICO
 function registroVendas(totalVendas) {
     const meta = 7500;
@@ -34,9 +42,9 @@ if (btnSalvar){
             mesesDesconto: Number(campoDesconto.value)
         };
 
-        let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+        let vendasSalvas = db.getItem("listaVendas") || [];
         vendasSalvas.push(dadosDaVenda);
-        localStorage.setItem("listaVendas", JSON.stringify(vendasSalvas));
+        db.setItem("listaVendas", vendasSalvas);
 
         let toast = document.getElementById("toast-sucesso");
         if (toast) {
@@ -54,7 +62,7 @@ if (btnSalvar){
 }
     
 function atualizarTabela(){
-    let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+    let vendasSalvas = db.getItem("listaVendas") || [];
     let vendasCopia = [...vendasSalvas].reverse(); 
 
     let corpoTabela = document.getElementById("tabela-ultimas-vendas");
@@ -100,7 +108,7 @@ atualizarTabela();
 let meuGrafico = null;
 
 function atualizarGrafico() {
-    let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+    let vendasSalvas = db.getItem("listaVendas") || [];
     let ctx = document.getElementById('graficoVendas');
 
     if (!ctx) return;
@@ -145,7 +153,7 @@ function carregarConsultaVendas(vendasParaMostrar = null) {
     let corpoTabela = document.getElementById("tabela-consulta");
     if (!corpoTabela) return; 
 
-    let vendas = vendasParaMostrar || JSON.parse(localStorage.getItem("listaVendas")) || [];
+    let vendas = vendasParaMostrar || db.getItem("listaVendas") || [];
     corpoTabela.innerHTML = "";
 
     if (vendas.length === 0) {
@@ -189,9 +197,9 @@ if (btnCancelarExclusao) {
 if (btnConfirmarExclusao) {
     btnConfirmarExclusao.addEventListener("click", function() {
         if (indexParaDeletar !== null) {
-            let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+            let vendasSalvas = db.getItem("listaVendas") || [];
             vendasSalvas.splice(indexParaDeletar, 1);
-            localStorage.setItem("listaVendas", JSON.stringify(vendasSalvas));
+            db.setItem("listaVendas", vendasSalvas);
 
             if (typeof carregarConsultaVendas === "function") carregarConsultaVendas();
             if (typeof atualizarTabela === "function") atualizarTabela();
@@ -217,7 +225,7 @@ if (btnFiltrar) {
     btnFiltrar.addEventListener("click", function() {
         let dataInicio = document.getElementById("data-inicio").value;
         let dataFim = document.getElementById("data-fim").value;
-        let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+        let vendasSalvas = db.getItem("listaVendas") || [];
 
         if (!dataInicio || !dataFim) {
             alert("Por favor, selecione a Data Inicial e a Data Final.");
@@ -259,7 +267,7 @@ if (btnCalcularComissao) {
             return;
         }
 
-        let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
+        let vendasSalvas = db.getItem("listaVendas") || [];
 
         let vendasDoMes = vendasSalvas.filter(function(venda) {
             return venda.data >= dataInicio && venda.data <= dataFim;
@@ -398,15 +406,15 @@ if (btnSalvarOnb) {
             dataAgendamento: dataAgendamento,
             planilhaOk: planilhaOk,
             manualOk: manualOk,
-            onboardingRealizado: false, // <--- GARANTE QUE JÁ NASCE FALSE CORRETAMENTE
+            onboardingRealizado: false,
             obs: obs,
             mesCriacao: dataAtual.getMonth(),
             anoCriacao: dataAtual.getFullYear()
         };
 
-        let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+        let listaOnboarding = db.getItem("listaOnboarding") || [];
         listaOnboarding.push(novoOnboarding);
-        localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
+        db.setItem("listaOnboarding", listaOnboarding);
 
         document.getElementById("onb-cliente").value = "";
         document.getElementById("onb-data").value = "";
@@ -422,7 +430,7 @@ function carregarTabelaOnboarding() {
     let corpoTabela = document.getElementById("tabela-onboarding");
     if (!corpoTabela) return;
 
-    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    let listaOnboarding = db.getItem("listaOnboarding") || [];
     let mesAtual = new Date().getMonth();
     let anoAtual = new Date().getFullYear();
 
@@ -476,7 +484,6 @@ function carregarTabelaOnboarding() {
         `;
         corpoTabela.appendChild(linha);
 
-        // Evento seguro para o checkbox "Planilha OK?"
         let chkPlanilha = document.getElementById(`check-planilha-${item.id}`);
         if (chkPlanilha) {
             chkPlanilha.addEventListener("change", function() {
@@ -484,7 +491,6 @@ function carregarTabelaOnboarding() {
             });
         }
 
-        // Evento seguro para o checkbox "Manual OK?"
         let chkManual = document.getElementById(`check-manual-${item.id}`);
         if (chkManual) {
             chkManual.addEventListener("change", function() {
@@ -492,7 +498,6 @@ function carregarTabelaOnboarding() {
             });
         }
 
-        // Evento seguro para o checkbox "Onboarding Realizado"
         let chkRealizado = document.getElementById(`check-realizado-${item.id}`);
         if (chkRealizado) {
             chkRealizado.addEventListener("change", function() {
@@ -500,7 +505,6 @@ function carregarTabelaOnboarding() {
             });
         }
 
-        // Evento seguro para o botão "Editar"
         let btnEditarLocal = document.getElementById(`btn-edit-${item.id}`);
         if (btnEditarLocal) {
             btnEditarLocal.addEventListener("click", function() {
@@ -511,12 +515,12 @@ function carregarTabelaOnboarding() {
 }
 
 function atualizarCheckOnboarding(id, qualCheckbox, elementoCheckbox) {
-    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    let listaOnboarding = db.getItem("listaOnboarding") || [];
     let index = listaOnboarding.findIndex(item => item.id === id);
     
     if (index !== -1) {
         listaOnboarding[index][qualCheckbox] = elementoCheckbox.checked;
-        localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
+        db.setItem("listaOnboarding", listaOnboarding);
         carregarTabelaOnboarding(); 
     }
 }
@@ -527,22 +531,16 @@ function preencherDropdownClientes() {
     let selectCliente = document.getElementById("onb-cliente");
     if (!selectCliente) return; 
 
-    // 1. Busca as vendas salvas e a lista de onboarding
-    let vendasSalvas = JSON.parse(localStorage.getItem("listaVendas")) || [];
-    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    let vendasSalvas = db.getItem("listaVendas") || [];
+    let listaOnboarding = db.getItem("listaOnboarding") || [];
 
-    // 2. Descobre quais clientes JÁ tiveram o onboarding concluído (realizado = true)
     let clientesConcluidos = listaOnboarding
         .filter(item => item.onboardingRealizado === true)
         .map(item => item.cliente);
 
-    // 3. Pega os nomes únicos de todas as vendas
     let nomesUnicos = [...new Set(vendasSalvas.map(venda => venda.cliente))];
-
-    // 4. Filtra a lista: só mantém os clientes que NÃO estão na lista de concluídos
     let nomesDisponiveis = nomesUnicos.filter(nome => !clientesConcluidos.includes(nome));
 
-    // 5. Limpa o select e preenche apenas com quem falta fazer o onboarding
     selectCliente.innerHTML = '<option value="">Selecione um cliente das vendas...</option>';
 
     nomesDisponiveis.forEach(function(nome) {
@@ -562,7 +560,7 @@ preencherDropdownClientes();
 let idItemEditando = null;
 
 function abrirModalEdicao(id) {
-    let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+    let listaOnboarding = db.getItem("listaOnboarding") || [];
     let item = listaOnboarding.find(obj => obj.id === id);
 
     if (item) {
@@ -588,14 +586,14 @@ let btnSalvarEdicao = document.getElementById("btn-salvar-edicao");
 if (btnSalvarEdicao) {
     btnSalvarEdicao.addEventListener("click", function() {
         if (idItemEditando !== null) {
-            let listaOnboarding = JSON.parse(localStorage.getItem("listaOnboarding")) || [];
+            let listaOnboarding = db.getItem("listaOnboarding") || [];
             let index = listaOnboarding.findIndex(obj => obj.id === idItemEditando);
 
             if (index !== -1) {
                 listaOnboarding[index].dataAgendamento = document.getElementById("edit-onb-data").value;
                 listaOnboarding[index].obs = document.getElementById("edit-onb-obs").value;
 
-                localStorage.setItem("listaOnboarding", JSON.stringify(listaOnboarding));
+                db.setItem("listaOnboarding", listaOnboarding);
 
                 let modalEdicao = document.getElementById("modal-editar-onb");
                 if (modalEdicao) modalEdicao.classList.remove("mostrar");
